@@ -3,7 +3,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 import seaborn as sns
 import os
-
+import unidecode
 #Aparentemente faz aparecer valores das porcentagens ao lado das barras(ctrl c + ctrl v da net com
 #algumas alterações). h_v='v' vertical, 'h' horizontal
 def show_values(axs, h_v="v", space=0.4,fontsize=10):
@@ -125,8 +125,8 @@ for regiao in dadosHomens.index:
 
     #Arruma para ticks ficarem sempre positivos
     bar_plot.set_xticklabels([str(abs(x)) for x in bar_plot.get_xticks()])
-
-    bar_plot.figure.savefig(os.path.join("img",regiao.replace(" ",'_')),dpi=DPI,figsize=FIG_SIZE)
+    fileName=unidecode.unidecode(regiao.replace(" ","_"))
+    bar_plot.figure.savefig(os.path.join("img",fileName),dpi=DPI,figsize=FIG_SIZE)
     #plt.show(bar_plot)
 
     bar_plot.clear()
