@@ -37,6 +37,17 @@ def show_values(axs, h_v="v", space=0.4,fontsize=10):
         _show_on_single_plot(axs)
 
 
+#Recebe pd.Series soma das porcentagens homens+mulheres e retorna uma lista com a faixa de idades que está mais próxima de ser a mediana, o valor das porcentagens acumuladas até essa faixa e um contador útil para plotar a linha
+def getMedian(soma):
+    cumsum=soma.cumsum()
+    for i in range(len(cumsum)):
+        if cumsum[i]<50 and cumsum[i+1]>50:
+            if abs(cumsum[i]-50)>abs(cumsum[i+1]-50):
+                return (cumsum[i+1],cumsum.index[i+1],i+1)
+            else:
+                return (cumsum[i],cumsum.index[i],i)
+
+
 #Pega dados. Eles são do censo 2010-IBGE e estão em relatório regional de 2017 (https://ippuc.org.br/mostrarpagina.php?pagina=496&idioma=1&ampliar=n%E3o)
 
 dadosHomens=pd.read_csv('dadosHomens.csv',encoding="UTF-8").set_index('regiao')
@@ -77,7 +88,6 @@ for regiao in dadosHomens.index:
     homens=pd.Series(-dadosHomens.loc[regiao],name='homens')
     mulheres=pd.Series(dadosMulheres.loc[regiao],name='mulheres')
 
-    print(regiao+": "+str(-homens.sum()+mulheres.sum()))
 
 
     df2=pd.concat([homens,mulheres],axis=1).reset_index()
@@ -88,11 +98,27 @@ for regiao in dadosHomens.index:
     red=sns.color_palette("tab10")[3]
     bar_plot = sns.barplot(x='homens', y='idades', data=df2, order=AgeClass,color=blue,label="homens")
 
+
+
+
+
     bar_plot = sns.barplot(x='mulheres', y='idades', data=df2, order=AgeClass,color=red,label="mulheres")
     bar_plot.set_xlabel("Porcentagem da população")
     bar_plot.set_ylabel("Idade")
+
+    #Faz mediana
+    soma=abs(mulheres)+abs(homens)
+    median=getMedian(soma)
+
+    #Plota mediana, os ticks em y do plot vão de 1 em 1, de cima para baixo. Dessa forma, precisamos plotar o complementar do contador da função getMedian. Além disso, tomamos -0.5 de forma que a mediana fique no meio do caminho entre a faixa desejada e a próxima
+    plt.axhline(len(soma)-1-median[2]-0.5,linestyle='--',color='k',label='mediana: '+format(median[0],'.2f')+"%")
+    print(regiao+": "+str(-homens.sum()+mulheres.sum()),'mediana :'+median[1])
+
     show_values(bar_plot,h_v='h',space=0.1,fontsize=XXSMALL_SIZE)
     plt.xlim([-7,7])
+
+
+
 
     bar_plot.legend()
     bar_plot.set_title(regiao +" - 2010")
